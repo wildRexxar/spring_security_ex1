@@ -1,7 +1,9 @@
 package com.example.springsecurityex1.config;
 
+import com.example.springsecurityex1.model.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -13,10 +15,19 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        super.configure(http);
+        http
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/")
+                .permitAll()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .httpBasic();
     }
 
     @Bean
@@ -27,7 +38,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .builder()
                         .username("admin")
                         .password(passwordEncoder().encode("admin"))
-                        .roles("ADMIN")
+                        .authorities(Role.ADMIN.getAuthorities())
+                        .build(),
+                User
+                        .builder()
+                        .username("user")
+                        .password(passwordEncoder().encode("user"))
+                        .authorities(Role.USER.getAuthorities())
                         .build()
         );
     }
